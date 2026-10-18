@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MATH</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        overflow-x: hidden;
+        background: linear-gradient(125deg, #07050a, #150e2b, #2b1227, #07050a);
+        background-size: 400% 400%;
+        animation: neonGlow 15s ease infinite alternate;
+      }
+
+      @keyframes neonGlow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .top {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .photo-block {
+        flex: 3;
+        background: transparent;
+        padding: 10px;
+        border-radius: 5px;
+        min-height: 500px;
+        perspective: 1000px;
+      }
+      .photo-block img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-radius: 3px;
+        transform-style: preserve-3d;
+        transition: transform 0.1s ease-out;
+      }
+
+      .ad-block {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .ad-title {
+        background: #000000;
+        color: red;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 20px;
+        border-radius: 5px;
+      }
+      .ad-text {
+        background: #123302;
+        color: #f80199;
+        padding: 25px;
+        font-weight: bold;
+        font-size: 20px;
+        line-height: 1.4;
+        border-radius: 5px;
+        flex: 1;
+      }
+      .ad-btn {
+        background: #4a4a4a;
+        color: #f80199;
+        padding: 18px;
+        font-weight: bold;
+        font-size: 20px;
+        border-radius: 5px;
+        text-align: center;
+      }
+      .copy-block {
+        flex: 3;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .copy-title {
+        background: #2c0f0f;
+        color: #f80199;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 20px;
+        border-radius: 5px;
+      }
+
+      .copy-line {
+        color: #f80199;
+        height: 40px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 20px;
+        padding-left: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      .copy-line:nth-of-type(1) {
+        background: #2b1b1b;
+      }
+      .copy-line:nth-of-type(2) {
+        background: #3a1a1a;
+      }
+      .copy-line:nth-of-type(3) {
+        background: #1a3a1a;
+      }
+      .copy-line:nth-of-type(4) {
+        background: #1a1a3a;
+      }
+      .copy-line:nth-of-type(5) {
+        background: #3a3a1a;
+      }
+      .copy-line:nth-of-type(6) {
+        background: #3a1a3a;
+      }
+      .copy-line:nth-of-type(7) {
+        background: #1a3a3a;
+      }
+      .copy-line:nth-of-type(8) {
+        background: #222222;
+      }
+
+      .bottom {
+        display: flex;
+        gap: 15px;
+        background: transparent;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      .card {
+        flex: 1;
+        color: #fff;
+        padding: 40px 20px;
+        font-weight: bold;
+        font-size: 18px;
+        text-align: center;
+        border-radius: 5px;
+        line-height: 1.4;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(128, 128, 128, 0.5);
+        border-radius: 5px;
+      }
+
+      #webgl-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="webgl-canvas"></canvas>
+    <div class="top">
+      <div class="photo-block">
+        <img src="img/Мужик тот.jpg" alt="" />
+      </div>
+      <div class="ad-block">
+        <div class="ad-title">ЗВОНИТЕ МНЕ ПЖ</div>
+        <div class="ad-text">
+          ЗДЕСЬ МОГЛА БЫТЬ ВАША РЕКЛАМА, НО У ВАС НЕТ ДЕНЕГ ХАХХАХАХАХАХ
+          АХХАХАХАХАХА
+        </div>
+        <div class="ad-btn">КУПИ, НЕ ПРИДУ</div>
+      </div>
+      <div class="copy-block">
+        <div class="copy-title">СКОПИРУЙ МЕНЯ</div>
+        <div class="copy-line">москва</div>
+        <div class="copy-line">арбуз</div>
+        <div class="copy-line">яблоко</div>
+        <div class="copy-line">морковка</div>
+        <div class="copy-line">груша</div>
+        <div class="copy-line">малинка</div>
+        <div class="copy-line">ягодка</div>
+        <div class="copy-line">помидор</div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div
+        class="card"
+        style="background-image: url(&quot;img/фотка.jpg&quot;)"
+      ></div>
+      <div
+        class="card"
+        style="background-image: url(&quot;img/image.jpg&quot;)"
+      ></div>
+      <div
+        class="card"
+        style="background-image: url(&quot;img/моя история браузера.jpg&quot;)"
+      ></div>
+      <div
+        class="card"
+        style="background-image: url(&quot;img/мое отношение.jpg&quot;)"
+      ></div>
+    </div>
+    <script>
+      const cards = document.querySelectorAll(".card");
+
+      cards.forEach((card) => {
+        card.addEventListener("mousemove", (e) => {
+          const rect = card.getBoundingClientRect();
+
+          const cardX = rect.left + rect.width / 2;
+          const cardY = rect.top + rect.height / 2;
+
+          const mouseX = e.clientX - cardX;
+          const mouseY = e.clientY - cardY;
+
+          const angleX = -(mouseY / rect.height) * 70;
+          const angleY = (mouseX / rect.width) * 70;
+
+          card.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.03)`;
+        });
+
+        card.addEventListener("mouseleave", () => {
+          card.style.transition = "transform 0.4s ease";
+          card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+        });
+      });
+
+      (function () {
+        const canvas = document.getElementById("webgl-canvas");
+        const ctx = canvas.getContext("2d");
+
+        let width = (canvas.width = window.innerWidth);
+        let height = (canvas.height = window.innerHeight);
+
+        const bgParticles = [];
+        const bgMouse = { x: null, y: null };
+
+        window.addEventListener("mousemove", (e) => {
+          bgMouse.x = e.clientX;
+          bgMouse.y = e.clientY;
+        });
+
+        window.addEventListener("resize", () => {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        });
+
+        for (let i = 0; i < 75; i++) {
+          bgParticles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 1.0,
+            vy: (Math.random() - 0.5) * 1.0,
+          });
+        }
+
+        function drawLines() {
+          ctx.clearRect(0, 0, width, height);
+
+          for (let i = 0; i < bgParticles.length; i++) {
+            let p1 = bgParticles[i];
+            p1.x += p1.vx;
+            p1.y += p1.vy;
+
+            if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+            if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(p1.x, p1.y, 2, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            ctx.fill();
+
+            let dxMouse = p1.x - bgMouse.x;
+            let dyMouse = p1.y - bgMouse.y;
+            let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+            if (distMouse < 150) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(bgMouse.x, bgMouse.y);
+              ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distMouse / 150})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+
+            for (let j = i + 1; j < bgParticles.length; j++) {
+              let p2 = bgParticles[j];
+              let dx = p1.x - p2.x;
+              let dy = p1.y - p2.y;
+              let dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist < 100) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / 100})`;
+                ctx.lineWidth = 0.3;
+                ctx.stroke();
+              }
+            }
+          }
+
+          requestAnimationFrame(drawLines);
+        }
+        drawLines();
+      })();
+
+      const photoCard = document.querySelector(".photo-block img");
+
+      if (photoCard) {
+        photoCard.addEventListener("mousemove", (e) => {
+          const rect = photoCard.getBoundingClientRect();
+          const cardX = rect.left + rect.width / 2;
+          const cardY = rect.top + rect.height / 2;
+
+          const mouseX = e.clientX - cardX;
+          const mouseY = e.clientY - cardY;
+
+          const angleX = -(mouseY / rect.height) * 30;
+          const angleY = (mouseX / rect.width) * 30;
+
+          photoCard.style.transition = "none";
+          photoCard.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.02)`;
+        });
+
+        photoCard.addEventListener("mouseleave", () => {
+          photoCard.style.transition = "transform 0.4s ease";
+          photoCard.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+        });
+      }
+    </script>
+  </body>
+</html>
