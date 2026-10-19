@@ -185,6 +185,19 @@
         z-index: -1;
         pointer-events: none;
       }
+
+      @media (max-width: 768px) {
+    .top {
+        flex-direction: column;
+    }
+    .bottom {
+        flex-direction: column;
+    }
+    .photo-block {
+        min-height: 350px; 
+    }
+}
+
     </style>
   </head>
   <body>
@@ -236,6 +249,7 @@
 
       cards.forEach((card) => {
         card.addEventListener("mousemove", (e) => {
+          if (window.innerWidth <= 768) return;
           const rect = card.getBoundingClientRect();
 
           const cardX = rect.left + rect.width / 2;
@@ -340,6 +354,7 @@
 
       if (photoCard) {
         photoCard.addEventListener("mousemove", (e) => {
+          if (window.innerWidth <= 768) return;
           const rect = photoCard.getBoundingClientRect();
           const cardX = rect.left + rect.width / 2;
           const cardY = rect.top + rect.height / 2;
