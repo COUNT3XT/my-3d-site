@@ -164,7 +164,11 @@
         background-size: cover;
         background-position: center;
         position: relative;
+        perspective: 1000px;
+        transform-style: preserve-3d;
+
       }
+      
       .card::before {
         content: "";
         position: absolute;
@@ -247,29 +251,50 @@
     <script>
       const cards = document.querySelectorAll(".card");
 
-      cards.forEach((card) => {
-        card.addEventListener("mousemove", (e) => {
-          if (window.innerWidth <= 768) return;
-          const rect = card.getBoundingClientRect();
+cards.forEach((card) => {
+  function handleMove(e) {
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches.clientX;
+      clientY = e.touches.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
 
-          const cardX = rect.left + rect.width / 2;
-          const cardY = rect.top + rect.height / 2;
+    const rect = card.getBoundingClientRect();
+    const cardX = rect.left + rect.width / 2;
+    const cardY = rect.top + rect.height / 2;
 
-          const mouseX = e.clientX - cardX;
-          const mouseY = e.clientY - cardY;
+    const mouseX = clientX - cardX;
+    const mouseY = clientY - cardY;
 
-          const angleX = -(mouseY / rect.height) * 70;
-          const angleY = (mouseX / rect.width) * 70;
+    const maxAngle = window.innerWidth <= 768 ? 35 : 65; 
 
-          card.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.03)`;
-        });
+    const angleX = -(mouseY / rect.height) * maxAngle;
+    const angleY = (mouseX / rect.width) * maxAngle;
 
-        card.addEventListener("mouseleave", () => {
-          card.style.transition = "transform 0.4s ease";
-          card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
-        });
-      });
+    card.style.transition = "transform 0.05s ease-out";
+    card.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.04)`;
+  }
 
+  function handleLeave() {
+    card.style.transition = "transform 0.4s ease";
+    card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+  }
+
+  card.addEventListener("mousemove", handleMove);
+  card.addEventListener("mouseleave", handleLeave);
+
+  card.addEventListener("touchmove", (e) => {
+    e.preventDefault(); 
+    handleMove(e);
+  }, { passive: false });
+
+  card.addEventListener("touchend", handleLeave);
+});
+
+    
       (function () {
         const canvas = document.getElementById("webgl-canvas");
         const ctx = canvas.getContext("2d");
@@ -350,30 +375,51 @@
         drawLines();
       })();
 
-      const photoCard = document.querySelector(".photo-block img");
+     const photoImg = document.querySelector(".photo-block img");
 
-      if (photoCard) {
-        photoCard.addEventListener("mousemove", (e) => {
-          if (window.innerWidth <= 768) return;
-          const rect = photoCard.getBoundingClientRect();
-          const cardX = rect.left + rect.width / 2;
-          const cardY = rect.top + rect.height / 2;
+if (photoImg) {
+  function handlePhotoMove(e) {
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches.clientX;
+      clientY = e.touches.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
 
-          const mouseX = e.clientX - cardX;
-          const mouseY = e.clientY - cardY;
+    const rect = photoImg.getBoundingClientRect();
+    const photoX = rect.left + rect.width / 2;
+    const photoY = rect.top + rect.height / 2;
 
-          const angleX = -(mouseY / rect.height) * 30;
-          const angleY = (mouseX / rect.width) * 30;
+    const mouseX = clientX - photoX;
+    const mouseY = clientY - photoY;
 
-          photoCard.style.transition = "none";
-          photoCard.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.02)`;
-        });
+    const maxAngle = window.innerWidth <= 768 ? 25 : 50; 
 
-        photoCard.addEventListener("mouseleave", () => {
-          photoCard.style.transition = "transform 0.4s ease";
-          photoCard.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
-        });
-      }
+    const angleX = -(mouseY / rect.height) * maxAngle;
+    const angleY = (mouseX / rect.width) * maxAngle;
+
+    photoImg.style.transition = "transform 0.05s ease-out";
+    photoImg.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.02)`;
+  }
+
+  function handlePhotoLeave() {
+    photoImg.style.transition = "transform 0.4s ease";
+    photoImg.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+  }
+
+  photoImg.addEventListener("mousemove", handlePhotoMove);
+  photoImg.addEventListener("mouseleave", handlePhotoLeave);
+
+  photoImg.addEventListener("touchmove", (e) => {
+    e.preventDefault(); 
+    handlePhotoMove(e);
+  }, { passive: false });
+
+  photoImg.addEventListener("touchend", handlePhotoLeave);
+}
+
     </script>
   </body>
 </html>
