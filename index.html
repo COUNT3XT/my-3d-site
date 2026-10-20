@@ -55,6 +55,7 @@
         border-radius: 3px;
         transform-style: preserve-3d;
         transition: transform 0.1s ease-out;
+        touch-action: none; 
       }
 
       .ad-block {
@@ -166,6 +167,7 @@
         position: relative;
         perspective: 1000px;
         transform-style: preserve-3d;
+        touch-action: none; 
 
       }
       
@@ -249,25 +251,16 @@
       ></div>
     </div>
     <script>
-      const cards = document.querySelectorAll(".card");
+     const cards = document.querySelectorAll(".card");
 
 cards.forEach((card) => {
   function handleMove(e) {
-    let clientX, clientY;
-    if (e.touches && e.touches.length > 0) {
-      clientX = e.touches.clientX;
-      clientY = e.touches.clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
     const rect = card.getBoundingClientRect();
     const cardX = rect.left + rect.width / 2;
     const cardY = rect.top + rect.height / 2;
 
-    const mouseX = clientX - cardX;
-    const mouseY = clientY - cardY;
+    const mouseX = e.clientX - cardX;
+    const mouseY = e.clientY - cardY;
 
     const maxAngle = window.innerWidth <= 768 ? 35 : 65; 
 
@@ -282,6 +275,11 @@ cards.forEach((card) => {
     card.style.transition = "transform 0.4s ease";
     card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
   }
+
+  card.addEventListener("pointermove", handleMove);
+  card.addEventListener("pointerleave", handleLeave);
+});
+
 
   card.addEventListener("mousemove", handleMove);
   card.addEventListener("mouseleave", handleLeave);
@@ -379,21 +377,12 @@ cards.forEach((card) => {
 
 if (photoImg) {
   function handlePhotoMove(e) {
-    let clientX, clientY;
-    if (e.touches && e.touches.length > 0) {
-      clientX = e.touches.clientX;
-      clientY = e.touches.clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
     const rect = photoImg.getBoundingClientRect();
     const photoX = rect.left + rect.width / 2;
     const photoY = rect.top + rect.height / 2;
 
-    const mouseX = clientX - photoX;
-    const mouseY = clientY - photoY;
+    const mouseX = e.clientX - photoX;
+    const mouseY = e.clientY - photoY;
 
     const maxAngle = window.innerWidth <= 768 ? 25 : 50; 
 
@@ -409,16 +398,10 @@ if (photoImg) {
     photoImg.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
   }
 
-  photoImg.addEventListener("mousemove", handlePhotoMove);
-  photoImg.addEventListener("mouseleave", handlePhotoLeave);
-
-  photoImg.addEventListener("touchmove", (e) => {
-    e.preventDefault(); 
-    handlePhotoMove(e);
-  }, { passive: false });
-
-  photoImg.addEventListener("touchend", handlePhotoLeave);
+  photoImg.addEventListener("pointermove", handlePhotoMove);
+  photoImg.addEventListener("pointerleave", handlePhotoLeave);
 }
+
 
     </script>
   </body>
