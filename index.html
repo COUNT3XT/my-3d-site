@@ -161,6 +161,118 @@
         border-radius: 5px;
       }
 
+      .cube-wrap {
+        --s: min(200px, 48vw);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 90px 0 110px;
+        perspective: 1000px;
+      }
+      .cube,
+      .core {
+        position: relative;
+        width: var(--s);
+        height: var(--s);
+        transform-style: preserve-3d;
+      }
+      .cube {
+        --d: calc(var(--s) / 2);
+        touch-action: pan-y;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .cube:active {
+        cursor: grabbing;
+      }
+      .core {
+        --d: calc(var(--s) / 4);
+        position: absolute;
+        top: 25%;
+        left: 25%;
+        width: 50%;
+        height: 50%;
+        pointer-events: none;
+      }
+      .face {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border: 1px solid rgba(255, 225, 245, 0.55);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.04) 45%,
+          rgba(248, 1, 153, 0.07) 70%,
+          rgba(255, 255, 255, 0.14)
+        );
+        -webkit-backdrop-filter: blur(5px) saturate(1.6) brightness(1.12);
+        backdrop-filter: blur(5px) saturate(1.6) brightness(1.12);
+        box-shadow:
+          inset 0 0 28px rgba(255, 255, 255, 0.22),
+          inset 2px 2px 0 rgba(255, 255, 255, 0.45),
+          inset -2px -2px 0 rgba(255, 150, 215, 0.25);
+        backface-visibility: visible;
+      }
+      .face::before {
+        content: "";
+        position: absolute;
+        top: -20%;
+        left: -60%;
+        width: 55%;
+        height: 140%;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0.5),
+          rgba(255, 255, 255, 0)
+        );
+        transform: rotate(18deg);
+      }
+      .face::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          circle at 25% 20%,
+          rgba(255, 255, 255, 0.35),
+          rgba(255, 255, 255, 0) 45%
+        );
+      }
+      .core .face {
+        border-color: rgba(255, 255, 255, 0.7);
+        -webkit-backdrop-filter: blur(2px) brightness(1.2);
+        backdrop-filter: blur(2px) brightness(1.2);
+        box-shadow:
+          inset 0 0 16px rgba(255, 255, 255, 0.3),
+          inset 1px 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .face:nth-child(1) {
+        transform: rotateY(0deg) translateZ(var(--d));
+      }
+      .face:nth-child(2) {
+        transform: rotateY(90deg) translateZ(var(--d));
+      }
+      .face:nth-child(3) {
+        transform: rotateY(180deg) translateZ(var(--d));
+      }
+      .face:nth-child(4) {
+        transform: rotateY(-90deg) translateZ(var(--d));
+      }
+      .face:nth-child(5) {
+        transform: rotateX(90deg) translateZ(var(--d));
+      }
+      .face:nth-child(6) {
+        transform: rotateX(-90deg) translateZ(var(--d));
+      }
+
       #webgl-canvas {
         position: fixed;
         top: 0;
@@ -227,6 +339,24 @@
         class="card"
         style="background-image: url(&quot;img/мое отношение.jpg&quot;)"
       ></div>
+    </div>
+    <div class="cube-wrap">
+      <div class="cube">
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="core">
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+        </div>
+      </div>
     </div>
     <script>
       function attachTilt(el, strength, scale, persp) {
@@ -330,14 +460,20 @@
             y: Math.random() * height,
             vx: (Math.random() - 0.5) * 1.0,
             vy: (Math.random() - 0.5) * 1.0,
+            hue: Math.random() * 360,
           });
         }
 
+        let tick = 0;
+
         function drawLines() {
           ctx.clearRect(0, 0, width, height);
+          tick += 0.6;
 
           for (let i = 0; i < bgParticles.length; i++) {
             let p1 = bgParticles[i];
+            const h1 = (p1.hue + tick) % 360;
+            const pulse = 0.65 + 0.35 * Math.sin(tick * 0.05 + i);
             p1.x += p1.vx;
             p1.y += p1.vy;
 
@@ -345,9 +481,12 @@
             if (p1.y < 0 || p1.y > height) p1.vy *= -1;
 
             ctx.beginPath();
-            ctx.arc(p1.x, p1.y, 2, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(244, 233, 233, 0.7)";
+            ctx.arc(p1.x, p1.y, 1.6 + pulse, 0, Math.PI * 2);
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = `hsla(${h1}, 100%, 65%, 0.9)`;
+            ctx.fillStyle = `hsla(${h1}, 100%, 72%, ${pulse})`;
             ctx.fill();
+            ctx.shadowBlur = 0;
 
             if (bgMouse.x !== null) {
               let dxMouse = p1.x - bgMouse.x;
@@ -358,7 +497,7 @@
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.lineTo(bgMouse.x, bgMouse.y);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distMouse / 150})`;
+                ctx.strokeStyle = `hsla(${h1}, 100%, 75%, ${1 - distMouse / 150})`;
                 ctx.lineWidth = 0.5;
                 ctx.stroke();
               }
@@ -374,7 +513,9 @@
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.lineTo(p2.x, p2.y);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / 100})`;
+                const h2 = (p2.hue + tick) % 360;
+                const hm = h1 + (((h2 - h1 + 540) % 360) - 180) / 2;
+                ctx.strokeStyle = `hsla(${hm}, 100%, 75%, ${1 - dist / 100})`;
                 ctx.lineWidth = 0.3;
                 ctx.stroke();
               }
@@ -384,6 +525,67 @@
           requestAnimationFrame(drawLines);
         }
         drawLines();
+      })();
+      (function () {
+        const cube = document.querySelector(".cube");
+        if (!cube) return;
+
+        let rx = -25;
+        let ry = 35;
+        let rz = 0;
+        let vx = 0.35;
+        let vy = 0.6;
+        let vz = 0.15;
+        let tx = vx;
+        let ty = vy;
+        let tz = vz;
+        let dragging = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function pickDirection() {
+          tx = (Math.random() - 0.5) * 1.6;
+          ty = (Math.random() - 0.5) * 1.6;
+          tz = (Math.random() - 0.5) * 0.9;
+        }
+        setInterval(pickDirection, 2500);
+
+        cube.addEventListener("pointerdown", (e) => {
+          dragging = true;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          cube.setPointerCapture(e.pointerId);
+        });
+        cube.addEventListener("pointermove", (e) => {
+          if (!dragging) return;
+          const dx = e.clientX - lastX;
+          const dy = e.clientY - lastY;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          ry += dx * 0.5;
+          rx -= dy * 0.5;
+          vy = dx * 0.5;
+          vx = -dy * 0.5;
+        });
+        const stop = () => {
+          dragging = false;
+        };
+        cube.addEventListener("pointerup", stop);
+        cube.addEventListener("pointercancel", stop);
+
+        function frame() {
+          if (!dragging) {
+            vx += (tx - vx) * 0.02;
+            vy += (ty - vy) * 0.02;
+            vz += (tz - vz) * 0.02;
+            rx += vx;
+            ry += vy;
+            rz += vz;
+          }
+          cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+          requestAnimationFrame(frame);
+        }
+        frame();
       })();
     </script>
   </body>
