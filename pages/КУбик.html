@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cyber Cube Loop</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body,
+      html {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #000000; /* Абсолютная пустота */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+    <!-- Подключаем Three.js для 3D графики -->
+    <script src="https://cloudflare.com"></script>
+  </head>
+  <body>
+    <canvas id="cyberCanvas"></canvas>
+
+    <script>
+      // --- Шейдер для радиоактивной плазмы (Внутреннее ядро) ---
+      const plasmaVertexShader = `
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            void main() {
+                vUv = uv;
+                vNormal = normalize(normalMatrix * normal);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+      const plasmaFragmentShader = `
+            uniform float time;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+
+            // Функция шума для создания эффекта плазмы
+            float noise(vec3 p) {
+                return sin(p.x + sin(p.y + time)) * cos(p.y + cos(p.z + time)) * sin(p.z + time);
+            }
+
+            void main() {
+                vec3 coord = vec3(vUv * 4.0, time * 0.8);
+                float n = noise(coord);
+                
+                // Смешивание неонового циана и яркой мадженты
+                vec3 color1 = vec3(0.0, 1.0, 1.0); // Cyan
+                vec3 color2 = vec3(1.0, 0.0, 0.5); // Magenta
+                vec3 finalColor = mix(color1, color2, n * 0.5 + 0.5);
+                
+                // Добавляем свечение по краям (Fresnel effect)
+                float intensity = pow(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+                finalColor += finalColor * intensity * 1.5;
+
+                gl_FragColor = vec4(finalColor, 0.8);
+            }
+        `;
+
+      // --- Инициализация Сцены ---
+      const canvas = document.getElementById("cyberCanvas");
+      const scene = new THREE.Scene();
+
+      // Камера с эффектом кинематографичности
+      const camera = new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000,
+      );
+      camera.position.z = 6;
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: false,
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Баланс 60fps и четкости 8k стиля
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
+
+      // Группа для куба, чтобы вращать его независимо по осям с инерцией
+      const cubeGroup = new THREE.Group();
+      scene.add(cubeGroup);
+
+      // --- Создание материалов ---
+      // 1. Внешняя оболочка: Хром / Обсидиановое стекло
+      const outerMaterial = new THREE.MeshStandardMaterial({
+        color: 0x050505,
+        roughness: 0.05,
+        metalness: 0.95,
+        transparent: true,
+        opacity: 0.4,
+        side: THREE.DoubleSide,
+      });
+
+      // 2. Светящиеся ребра (Laser Lines)
+      const edgeGeometry = new THREE.BoxGeometry(2.02, 2.02, 2.02);
+      const edges = new THREE.EdgesGeometry(edgeGeometry);
+
+      // Массив цветов для создания градиента линий граней
+      const lineMaterialCyan = new THREE.LineBasicMaterial({
+        color: 0x00ffff,
+        linewidth: 2,
+      });
+      const lineMaterialMagenta = new THREE.LineBasicMaterial({
+        color: 0xff007f,
+        linewidth: 2,
+      });
+
+      const edgeLinesCyan = new THREE.LineSegments(edges, lineMaterialCyan);
+      const edgeLinesMagenta = new THREE.LineSegments(
+        edges,
+        lineMaterialMagenta,
+      );
+      edgeLinesMagenta.scale.set(1.005, 1.005, 1.005); // Легкое смещение для перелива цветов
+
+      cubeGroup.add(edgeLinesCyan);
+      cubeGroup.add(edgeLinesMagenta);
+
+      // 3. Основной куб (Обсидиан)
+      const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
+      const outerCube = new THREE.Mesh(boxGeometry, outerMaterial);
+      cubeGroup.add(outerCube);
+
+      // 4. Плазменное Ядро (Сфера внутри куба)
+      const coreGeometry = new THREE.SphereGeometry(0.7, 64, 64);
+      const coreUniforms = { time: { value: 0 } };
+      const coreMaterial = new THREE.ShaderMaterial({
+        vertexShader: plasmaVertexShader,
+        fragmentShader: plasmaFragmentShader,
+        uniforms: coreUniforms,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+      });
+      const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+      cubeGroup.add(coreMesh);
+
+      // --- Освещение (Tech Luxury Raytracing Emulation) ---
+      const topLight = new THREE.DirectionalLight(0x00ffff, 2);
+      topLight.position.set(5, 5, 5);
+      scene.add(topLight);
+
+      const bottomLight = new THREE.DirectionalLight(0xff007f, 2);
+      bottomLight.position.set(-5, -5, -5);
+      scene.add(bottomLight);
+
+      const ambientLight = new THREE.AmbientLight(0x111111);
+      scene.add(ambientLight);
+
+      // --- Анимация, Физика и Циклический Пульс (Spring/Pulse Loop) ---
+      const clock = new THREE.Clock();
+
+      let targetRotationX = 0;
+      let targetRotationY = 0;
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        const elapsedTime = clock.getElapsedTime();
+        coreUniforms.time.value = elapsedTime;
+
+        // 1. Изящное многоосевое вращение с физической инерцией
+        targetRotationX += 0.005;
+        targetRotationY += 0.008;
+
+        cubeGroup.rotation.x += (targetRotationX - cubeGroup.rotation.x) * 0.05;
+        cubeGroup.rotation.y += (targetRotationY - cubeGroup.rotation.y) * 0.05;
+        cubeGroup.rotation.z = Math.sin(elapsedTime * 0.2) * 0.3; // Дополнительная ось
+
+        // 2. Механика пружинного импульса (Каждые 2 секунды)
+        // Используем волну синуса, возведенную в степень для эффекта резкого толчка и плавного затухания
+        const pulseCycle = (elapsedTime % 2.0) / 2.0; // Значение от 0 до 1 каждые 2 секунды
+        const pulseFactor = Math.sin(pulseCycle * Math.PI * 2);
+
+        // Расчет сжатия/расширения (Spring effect)
+        let scale = 1.0;
+        if (pulseCycle < 0.2) {
+          // Фаза взрыва / расширения
+          scale = 1.0 + Math.sin(((pulseCycle / 0.2) * Math.PI) / 2) * 0.08;
+        } else {
+          // Фаза затухания пружины
+          scale =
+            1.0 +
+            Math.exp(-(pulseCycle - 0.2) * 5.0) *
+              Math.sin((pulseCycle - 0.2) * Math.PI * 10.0) *
+              0.08;
+        }
+
+        cubeGroup.scale.set(scale, scale, scale);
+
+        // Морфинг ядра (пульсация самого центра)
+        const coreScale = 1.0 + Math.sin(elapsedTime * 4.0) * 0.05;
+        coreMesh.scale.set(coreScale, coreScale, coreScale);
+
+        renderer.render(scene, camera);
+      }
+
+      // --- Адаптивность под экраны (Ресайз) ---
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Запуск
+      animate();
+    </script>
+  </body>
+</html>

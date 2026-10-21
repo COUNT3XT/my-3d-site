@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ЗВОНИТЕ МНЕ ПЖ</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        text-align: center;
+        background: linear-gradient(125deg, #07050a, #150e2b, #2b1227, #07050a);
+        background-size: 400% 400%;
+        animation: neonGlow 15s ease infinite alternate;
+      }
+      @keyframes neonGlow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+      h1 {
+        color: #f80199;
+        font-size: clamp(28px, 6vw, 64px);
+        text-shadow: 0 0 24px rgba(248, 1, 153, 0.5);
+      }
+      p {
+        color: #f80199;
+        opacity: 0.7;
+        font-size: 18px;
+      }
+      a {
+        color: #f80199;
+        font-weight: bold;
+        font-size: 20px;
+        text-decoration: none;
+        padding: 14px 28px;
+        border: 1px solid #f80199;
+        border-radius: 5px;
+        transition: background 0.2s ease;
+      }
+      a:hover {
+        background: rgba(248, 1, 153, 0.15);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Скоро</h1>
+    <p>Здесь будет содержимое этой страницы</p>
+    <a href="../index.html">&larr; Назад</a>
+  </body>
+</html>

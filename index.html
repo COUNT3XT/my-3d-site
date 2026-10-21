@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MATH</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        overflow-x: hidden;
+        background: linear-gradient(125deg, #07050a, #150e2b, #2b1227, #07050a);
+        background-size: 400% 400%;
+        animation: neonGlow 15s ease infinite alternate;
+      }
+
+      @keyframes neonGlow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .top {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .photo-block {
+        flex: 3;
+        background: transparent;
+        padding: 10px;
+        border-radius: 5px;
+        min-height: 500px;
+        perspective: 1000px;
+      }
+      .photo-block img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-radius: 3px;
+        transform-style: preserve-3d;
+        transition: transform 0.1s ease-out;
+        -webkit-user-drag: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+
+      .ad-block {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .ad-title {
+        background: transparent;
+        color: #f80199;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 20px;
+        border-radius: 5px;
+      }
+      .ad-text {
+        background: transparent;
+        color: #f80199;
+        padding: 25px;
+        font-weight: bold;
+        font-size: 20px;
+        line-height: 1.4;
+        border-radius: 5px;
+        flex: 1;
+      }
+      .ad-btn {
+        background: transparent;
+        color: #f80199;
+        padding: 18px;
+        font-weight: bold;
+        font-size: 20px;
+        border-radius: 5px;
+        text-align: center;
+      }
+      .copy-block {
+        flex: 3;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .copy-title {
+        background: transparent;
+        color: #f80199;
+        padding: 12px;
+        font-weight: bold;
+        font-size: 20px;
+        border-radius: 5px;
+      }
+
+      .copy-line {
+        color: #f80199;
+        height: 40px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 20px;
+        padding-left: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      .copy-line {
+        background: transparent;
+      }
+
+      .bottom {
+        display: flex;
+        gap: 15px;
+        background: transparent;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      .card {
+        flex: 1;
+        color: #f80199;
+        padding: 40px 20px;
+        font-weight: bold;
+        font-size: 18px;
+        text-align: center;
+        border-radius: 5px;
+        line-height: 1.4;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(128, 128, 128, 0.5);
+        border-radius: 5px;
+      }
+
+      .cube-wrap {
+        --s: min(300px, 62vw);
+        display: grid;
+        place-items: center;
+        padding: 60px 0 80px;
+        perspective: 1000px;
+      }
+      .cube-wrap > * {
+        grid-area: 1 / 1;
+      }
+      #glass-cube {
+        width: min(560px, 94vw);
+        height: min(560px, 94vw);
+        opacity: 0;
+        pointer-events: none;
+        touch-action: pan-y;
+        cursor: grab;
+        transition: opacity 0.6s ease;
+      }
+      #glass-cube:active {
+        cursor: grabbing;
+      }
+      .gl-ready #glass-cube {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .gl-ready .cube {
+        display: none;
+      }
+      .cube,
+      .core {
+        position: relative;
+        width: var(--s);
+        height: var(--s);
+        transform-style: preserve-3d;
+      }
+      .cube {
+        --d: calc(var(--s) / 2);
+        touch-action: pan-y;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .cube:active {
+        cursor: grabbing;
+      }
+      .core {
+        --d: calc(var(--s) / 4);
+        position: absolute;
+        top: 25%;
+        left: 25%;
+        width: 50%;
+        height: 50%;
+        pointer-events: none;
+      }
+      .face {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border: 1px solid rgba(255, 225, 245, 0.55);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.04) 45%,
+          rgba(248, 1, 153, 0.07) 70%,
+          rgba(255, 255, 255, 0.14)
+        );
+        -webkit-backdrop-filter: blur(5px) saturate(1.6) brightness(1.12);
+        backdrop-filter: blur(5px) saturate(1.6) brightness(1.12);
+        box-shadow:
+          inset 0 0 28px rgba(255, 255, 255, 0.22),
+          inset 2px 2px 0 rgba(255, 255, 255, 0.45),
+          inset -2px -2px 0 rgba(255, 150, 215, 0.25);
+        backface-visibility: visible;
+      }
+      .face::before {
+        content: "";
+        position: absolute;
+        top: -20%;
+        left: -60%;
+        width: 55%;
+        height: 140%;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0.5),
+          rgba(255, 255, 255, 0)
+        );
+        transform: rotate(18deg);
+      }
+      .face::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          circle at 25% 20%,
+          rgba(255, 255, 255, 0.35),
+          rgba(255, 255, 255, 0) 45%
+        );
+      }
+      .core .face {
+        border-color: rgba(255, 255, 255, 0.7);
+        -webkit-backdrop-filter: blur(2px) brightness(1.2);
+        backdrop-filter: blur(2px) brightness(1.2);
+        box-shadow:
+          inset 0 0 16px rgba(255, 255, 255, 0.3),
+          inset 1px 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      .face:nth-child(1) {
+        transform: rotateY(0deg) translateZ(var(--d));
+      }
+      .face:nth-child(2) {
+        transform: rotateY(90deg) translateZ(var(--d));
+      }
+      .face:nth-child(3) {
+        transform: rotateY(180deg) translateZ(var(--d));
+      }
+      .face:nth-child(4) {
+        transform: rotateY(-90deg) translateZ(var(--d));
+      }
+      .face:nth-child(5) {
+        transform: rotateX(90deg) translateZ(var(--d));
+      }
+      .face:nth-child(6) {
+        transform: rotateX(-90deg) translateZ(var(--d));
+      }
+
+      a.card,
+      .ad-title,
+      .ad-text,
+      .ad-btn,
+      .copy-title,
+      .copy-line {
+        text-decoration: none;
+        cursor: pointer;
+        -webkit-user-drag: none;
+      }
+      .photo-link {
+        display: block;
+        height: 100%;
+        text-decoration: none;
+        -webkit-user-drag: none;
+      }
+
+      #webgl-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      @media (max-width: 768px) {
+        .top {
+          flex-direction: column;
+        }
+        .bottom {
+          flex-direction: column;
+        }
+        .photo-block {
+          min-height: 350px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="webgl-canvas"></canvas>
+    <div class="top">
+      <div class="photo-block">
+        <a class="photo-link" href="pages/foto.html"
+          ><img src="pages/man.jpg" alt=""
+        /></a>
+      </div>
+      <div class="ad-block">
+        <a class="ad-title" href="pages/zvonite.html">ЗВОНИТЕ МНЕ ПЖ</a>
+        <a class="ad-text" href="pages/reklama.html">
+          ЗДЕСЬ МОГЛА БЫТЬ ВАША РЕКЛАМА, НО У ВАС НЕТ ДЕНЕГ ХАХХАХАХАХАХ
+          АХХАХАХАХАХА
+        </a>
+        <a class="ad-btn" href="pages/kupi.html">КУПИ, НЕ ПРИДУ</a>
+      </div>
+      <div class="copy-block">
+        <a class="copy-title" href="pages/skopiruj.html">СКОПИРУЙ МЕНЯ</a>
+        <a class="copy-line" href="pages/moskva.html">москва</a>
+        <a class="copy-line" href="pages/arbuz.html">арбуз</a>
+        <a class="copy-line" href="pages/yabloko.html">яблоко</a>
+        <a class="copy-line" href="pages/morkovka.html">морковка</a>
+        <a class="copy-line" href="pages/grusha.html">груша</a>
+        <a class="copy-line" href="pages/malinka.html">малинка</a>
+        <a class="copy-line" href="pages/yagodka.html">ягодка</a>
+        <a class="copy-line" href="pages/КУбик.html">помидор</a>
+      </div>
+    </div>
+    <div class="bottom">
+      <a
+        class="card"
+        href="pages/fotka.html"
+        style="background-image: url(&quot;pages/fotka.jpg&quot;)"
+      ></a>
+      <a
+        class="card"
+        href="pages/image.html"
+        style="background-image: url(&quot;pages/image.jpg&quot;)"
+      ></a>
+      <a
+        class="card"
+        href="pages/istoriya-brauzera.html"
+        style="
+          background-image: url(&quot;pages/moya-istoriya-brauzera.jpg&quot;);
+        "
+      ></a>
+      <a
+        class="card"
+        href="pages/otnoshenie.html"
+        style="background-image: url(&quot;pages/moe-otnoshenie.jpg&quot;)"
+      ></a>
+    </div>
+    <div class="cube-wrap">
+      <canvas id="glass-cube"></canvas>
+      <div class="cube">
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="face"></div>
+        <div class="core">
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+          <div class="face"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function attachTilt(el, strength, scale, persp) {
+        const pre = persp ? `perspective(${persp}px) ` : "";
+        const clamp = (v) => Math.max(-0.5, Math.min(0.5, v));
+
+        function tilt(clientX, clientY) {
+          const rect = el.getBoundingClientRect();
+          const rx = clamp(
+            (clientY - (rect.top + rect.height / 2)) / rect.height,
+          );
+          const ry = clamp(
+            (clientX - (rect.left + rect.width / 2)) / rect.width,
+          );
+
+          el.style.transition = "none";
+          el.style.transform = `${pre}rotateX(${-rx * strength * 2}deg) rotateY(${
+            ry * strength * 2
+          }deg) scale(${scale})`;
+        }
+
+        function reset() {
+          el.style.transition = "transform 0.4s ease";
+          el.style.transform = `${pre}rotateX(0deg) rotateY(0deg) scale(1)`;
+        }
+
+        el.addEventListener("mousemove", (e) => tilt(e.clientX, e.clientY));
+        el.addEventListener("mouseleave", reset);
+
+        el.addEventListener(
+          "touchstart",
+          (e) => {
+            const t = e.touches[0];
+            tilt(t.clientX, t.clientY);
+          },
+          { passive: true },
+        );
+        el.addEventListener(
+          "touchmove",
+          (e) => {
+            const t = e.touches[0];
+            tilt(t.clientX, t.clientY);
+          },
+          { passive: true },
+        );
+        el.addEventListener("touchend", reset);
+        el.addEventListener("touchcancel", reset);
+      }
+
+      document.querySelectorAll(".card").forEach((card) => {
+        attachTilt(card, 35, 1.03);
+      });
+
+      const photoCard = document.querySelector(".photo-block img");
+      if (photoCard) attachTilt(photoCard, 15, 1.02);
+
+      document
+        .querySelectorAll(".ad-title, .ad-text, .ad-btn, .copy-title")
+        .forEach((el) => attachTilt(el, 20, 1.04, 700));
+
+      document
+        .querySelectorAll(".copy-line")
+        .forEach((el) => attachTilt(el, 12, 1.05, 500));
+
+      (function () {
+        const canvas = document.getElementById("webgl-canvas");
+        const ctx = canvas.getContext("2d");
+
+        let width = (canvas.width = window.innerWidth);
+        let height = (canvas.height = window.innerHeight);
+
+        const bgParticles = [];
+        const bgMouse = { x: null, y: null };
+
+        function setPointer(x, y) {
+          bgMouse.x = x;
+          bgMouse.y = y;
+        }
+
+        window.addEventListener("mousemove", (e) =>
+          setPointer(e.clientX, e.clientY),
+        );
+
+        window.addEventListener(
+          "touchstart",
+          (e) => setPointer(e.touches[0].clientX, e.touches[0].clientY),
+          { passive: true },
+        );
+        window.addEventListener(
+          "touchmove",
+          (e) => setPointer(e.touches[0].clientX, e.touches[0].clientY),
+          { passive: true },
+        );
+        window.addEventListener("touchend", () => setPointer(null, null));
+        window.addEventListener("touchcancel", () => setPointer(null, null));
+
+        window.addEventListener("resize", () => {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        });
+
+        for (let i = 0; i < 75; i++) {
+          bgParticles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 1.0,
+            vy: (Math.random() - 0.5) * 1.0,
+            hue: Math.random() * 360,
+          });
+        }
+
+        let tick = 0;
+
+        function drawLines() {
+          ctx.clearRect(0, 0, width, height);
+          tick += 0.6;
+
+          for (let i = 0; i < bgParticles.length; i++) {
+            let p1 = bgParticles[i];
+            const h1 = (p1.hue + tick) % 360;
+            const pulse = 0.65 + 0.35 * Math.sin(tick * 0.05 + i);
+            p1.x += p1.vx;
+            p1.y += p1.vy;
+
+            if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+            if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(p1.x, p1.y, 1.6 + pulse, 0, Math.PI * 2);
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = `hsla(${h1}, 100%, 65%, 0.9)`;
+            ctx.fillStyle = `hsla(${h1}, 100%, 72%, ${pulse})`;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            if (bgMouse.x !== null) {
+              let dxMouse = p1.x - bgMouse.x;
+              let dyMouse = p1.y - bgMouse.y;
+              let distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+              if (distMouse < 150) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(bgMouse.x, bgMouse.y);
+                ctx.strokeStyle = `hsla(${h1}, 100%, 75%, ${1 - distMouse / 150})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+              }
+            }
+
+            for (let j = i + 1; j < bgParticles.length; j++) {
+              let p2 = bgParticles[j];
+              let dx = p1.x - p2.x;
+              let dy = p1.y - p2.y;
+              let dist = Math.sqrt(dx * dx + dy * dy);
+
+              if (dist < 100) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                const h2 = (p2.hue + tick) % 360;
+                const hm = h1 + (((h2 - h1 + 540) % 360) - 180) / 2;
+                ctx.strokeStyle = `hsla(${hm}, 100%, 75%, ${1 - dist / 100})`;
+                ctx.lineWidth = 0.3;
+                ctx.stroke();
+              }
+            }
+          }
+
+          requestAnimationFrame(drawLines);
+        }
+        drawLines();
+      })();
+      (function () {
+        const cube = document.querySelector(".cube");
+        if (!cube) return;
+
+        let rx = -25;
+        let ry = 35;
+        let rz = 0;
+        let vx = 0.35;
+        let vy = 0.6;
+        let vz = 0.15;
+        let tx = vx;
+        let ty = vy;
+        let tz = vz;
+        let dragging = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function pickDirection() {
+          tx = (Math.random() - 0.5) * 1.6;
+          ty = (Math.random() - 0.5) * 1.6;
+          tz = (Math.random() - 0.5) * 0.9;
+        }
+        setInterval(pickDirection, 2500);
+
+        cube.addEventListener("pointerdown", (e) => {
+          dragging = true;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          cube.setPointerCapture(e.pointerId);
+        });
+        cube.addEventListener("pointermove", (e) => {
+          if (!dragging) return;
+          const dx = e.clientX - lastX;
+          const dy = e.clientY - lastY;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          ry += dx * 0.5;
+          rx -= dy * 0.5;
+          vy = dx * 0.5;
+          vx = -dy * 0.5;
+        });
+        const stop = () => {
+          dragging = false;
+        };
+        cube.addEventListener("pointerup", stop);
+        cube.addEventListener("pointercancel", stop);
+
+        function frame() {
+          if (!dragging) {
+            vx += (tx - vx) * 0.02;
+            vy += (ty - vy) * 0.02;
+            vz += (tz - vz) * 0.02;
+            rx += vx;
+            ry += vy;
+            rz += vz;
+          }
+          cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+          requestAnimationFrame(frame);
+        }
+        frame();
+      })();
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+      import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+      (function () {
+        const canvas = document.getElementById("glass-cube");
+        const wrap = document.querySelector(".cube-wrap");
+        if (!canvas || !wrap) return;
+
+        let renderer;
+        try {
+          renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: true,
+          });
+        } catch (err) {
+          return;
+        }
+
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.15;
+
+        const scene = new THREE.Scene();
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        scene.environment = pmrem.fromScene(
+          new RoomEnvironment(),
+          0.04,
+        ).texture;
+        scene.environmentIntensity = 1.6;
+
+        const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+        camera.position.set(0, 0, 6.4);
+
+        const key = new THREE.DirectionalLight(0xffffff, 2.2);
+        key.position.set(3, 4, 5);
+        scene.add(key);
+
+        const rim = new THREE.DirectionalLight(0x7fd8ff, 2);
+        rim.position.set(-4, -2, -3);
+        scene.add(rim);
+
+        const accent = new THREE.DirectionalLight(0xf80199, 0.8);
+        accent.position.set(4, -3, 2);
+        scene.add(accent);
+
+        const material = new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0,
+          transmission: 1,
+          thickness: 2.6,
+          ior: 1.33,
+          dispersion: 0.15,
+          attenuationColor: new THREE.Color(0x7fd8ff),
+          attenuationDistance: 1.4,
+          clearcoat: 1,
+          clearcoatRoughness: 0,
+          specularIntensity: 1,
+        });
+
+        const cube = new THREE.Mesh(
+          new RoundedBoxGeometry(1.7, 1.7, 1.7, 14, 0.3),
+          material,
+        );
+        cube.rotation.set(-0.4, 0.6, 0);
+        scene.add(cube);
+
+        function resize() {
+          const w = canvas.clientWidth;
+          const h = canvas.clientHeight;
+          if (!w || !h) return;
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+        }
+        resize();
+        new ResizeObserver(resize).observe(canvas);
+
+        const rad = Math.PI / 180;
+        let vx = 0.35;
+        let vy = 0.6;
+        let vz = 0.15;
+        let tx = vx;
+        let ty = vy;
+        let tz = vz;
+        let dragging = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        setInterval(() => {
+          tx = (Math.random() - 0.5) * 1.6;
+          ty = (Math.random() - 0.5) * 1.6;
+          tz = (Math.random() - 0.5) * 0.9;
+        }, 2500);
+
+        canvas.addEventListener("pointerdown", (e) => {
+          dragging = true;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          canvas.setPointerCapture(e.pointerId);
+        });
+        canvas.addEventListener("pointermove", (e) => {
+          if (!dragging) return;
+          const dx = e.clientX - lastX;
+          const dy = e.clientY - lastY;
+          lastX = e.clientX;
+          lastY = e.clientY;
+          cube.rotation.y += dx * 0.5 * rad;
+          cube.rotation.x += dy * 0.5 * rad;
+          vy = dx * 0.5;
+          vx = dy * 0.5;
+        });
+        const stop = () => {
+          dragging = false;
+        };
+        canvas.addEventListener("pointerup", stop);
+        canvas.addEventListener("pointercancel", stop);
+
+        let shown = false;
+        function frame() {
+          if (!dragging) {
+            vx += (tx - vx) * 0.02;
+            vy += (ty - vy) * 0.02;
+            vz += (tz - vz) * 0.02;
+            cube.rotation.x += vx * rad;
+            cube.rotation.y += vy * rad;
+            cube.rotation.z += vz * rad;
+          }
+          const t = performance.now() / 1000;
+          const amp =
+            0.04 + Math.min(0.08, (Math.abs(vx) + Math.abs(vy)) * 0.02);
+          cube.scale.set(
+            1 + amp * Math.sin(t * 1.7),
+            1 + amp * Math.sin(t * 2.1 + 1.3),
+            1 + amp * Math.sin(t * 1.3 + 2.6),
+          );
+          renderer.render(scene, camera);
+          if (!shown) {
+            shown = true;
+            wrap.classList.add("gl-ready");
+          }
+          requestAnimationFrame(frame);
+        }
+        frame();
+      })();
+    </script>
+  </body>
+</html>
